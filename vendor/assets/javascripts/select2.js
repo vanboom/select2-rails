@@ -3774,7 +3774,7 @@ S2.define('select2/data/minimumInputLength',[
   MinimumInputLength.prototype.query = function (decorated, params, callback) {
     params.term = params.term || '';
 
-    if (params.term.length < this.minimumInputLength) {
+    if (params.term.length > 0 && params.term.length < this.minimumInputLength) {
       this.trigger('results:message', {
         message: 'inputTooShort',
         args: {
@@ -3785,7 +3785,7 @@ S2.define('select2/data/minimumInputLength',[
       });
 
       return;
-    }
+    } else if (params.term.length == 0) { return}
 
     decorated.call(this, params, callback);
   };
@@ -3909,19 +3909,26 @@ S2.define('select2/dropdown/search',[
   Search.prototype.render = function (decorated) {
     var $rendered = decorated.call(this);
     var id = this.$element.attr('id') + '-search__field';
-
+    // DP use default browser placeholder handling on the input control
+    var placeholder = this.options.get('placeholder');
+    
     var $search = $(
       '<span class="select2-search select2-search--dropdown">' +
         '<input id="' + id + '" class="select2-search__field"' +
         ' type="search" tabindex="-1"' +
         ' autocomplete="off" autocorrect="off" autocapitalize="none"' +
-        ' spellcheck="false" role="textbox" />' +
+        ' spellcheck="false" role="textbox"/>' +
       '</span>'
     );
 
     this.$searchContainer = $search;
     this.$search = $search.find('input');
 
+    // DP use default browser placeholder handling on the input control
+    if (placeholder) {
+      $search.find('input').attr("placeholder", placeholder);
+    }
+    
     $rendered.prepend($search);
 
     return $rendered;
@@ -5514,8 +5521,8 @@ S2.define('select2/core',[
     if (this.isOpen()) {
       return;
     }
-
-    this.trigger('query', {});
+    this.focus();
+    this.trigger('open', {});
   };
 
   Select2.prototype.close = function () {
